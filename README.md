@@ -72,7 +72,7 @@ Voice-Agent/
 | `PORT` | Backend port | No (default: `3002`) |
 | `FRONTEND_URL` | Frontend origin for CORS | No (default: `http://localhost:5173`) |
 
-> **Never commit `.env` to git.** It is listed in `.gitignore`. Use `.env.example` as a template.
+
 
 ## Security Notes
 
