@@ -11,7 +11,12 @@ import { AudioRecorder, AudioPlayer } from '../lib/audio';
 let nextTranscriptId = 0;
 let nextToolCallId = 0;
 
-export function useVoiceSession() {
+interface UseVoiceSessionOptions {
+  onResponseComplete?: (text: string) => void;
+  onNaoConfig?: (ip: string) => void;
+}
+
+export function useVoiceSession(options?: UseVoiceSessionOptions) {
   const [status, setStatus] = useState<SessionStatus>('disconnected');
   const [speechState, setSpeechState] = useState<SpeechState>('idle');
   const [isRecording, setIsRecording] = useState(false);
@@ -24,6 +29,11 @@ export function useVoiceSession() {
   const playerRef = useRef<AudioPlayer | null>(null);
   const assistantBufferRef = useRef<string>('');
   const streamingEntryIdRef = useRef<string | null>(null);
+  // Keep latest callbacks in refs so handleServerMessage never goes stale
+  const onResponseCompleteRef = useRef(options?.onResponseComplete);
+  const onNaoConfigRef = useRef(options?.onNaoConfig);
+  onResponseCompleteRef.current = options?.onResponseComplete;
+  onNaoConfigRef.current = options?.onNaoConfig;
 
   const handleServerMessage = useCallback((event: MessageEvent) => {
     const msg: ServerMessage = JSON.parse(event.data);
@@ -103,6 +113,10 @@ export function useVoiceSession() {
       }
 
       case 'response.done': {
+        // Fire NAO behavior scheduling before clearing the buffer
+        if (assistantBufferRef.current.trim()) {
+          onResponseCompleteRef.current?.(assistantBufferRef.current);
+        }
         // Finalize the streaming assistant entry
         if (streamingEntryIdRef.current) {
           const entryId = streamingEntryIdRef.current;
@@ -113,6 +127,11 @@ export function useVoiceSession() {
         assistantBufferRef.current = '';
         streamingEntryIdRef.current = null;
         setSpeechState('idle');
+        break;
+      }
+
+      case 'nao.config': {
+        onNaoConfigRef.current?.(msg.ip);
         break;
       }
 

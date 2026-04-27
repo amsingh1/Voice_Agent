@@ -71,6 +71,11 @@ export class RealtimeSession {
       console.log('[Realtime] Session configured with tools');
       this.isSessionReady = true;
       this.sendToFrontend({ type: 'session.ready' });
+
+      // Inform the frontend of NAO config so the IP never lives in the browser bundle
+      if (config.nao.enabled && config.nao.ip) {
+        this.sendToFrontend({ type: 'nao.config', ip: config.nao.ip });
+      }
     });
 
     // Audio output delta

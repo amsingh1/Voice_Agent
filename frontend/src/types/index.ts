@@ -41,4 +41,5 @@ export type ServerMessage =
   | { type: 'response.done' }
   | { type: 'speech.started' }
   | { type: 'speech.stopped' }
+  | { type: 'nao.config'; ip: string }
   | { type: 'error'; message: string };

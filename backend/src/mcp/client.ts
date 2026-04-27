@@ -15,20 +15,20 @@ let toolsCache: any[] = [];
 export async function initMCPClient(): Promise<void> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mcpServers: Record<string, unknown> = {
+      elastic: { url: config.mcp.serverUrl },
+    };
+
     mcpClient = new MultiServerMCPClient({
       throwOnLoadError: false,
       prefixToolNameWithServerName: false,
       useStandardContentBlocks: true,
       onConnectionError: 'ignore',
-      mcpServers: {
-        local: {
-          url: config.mcp.serverUrl,
-        },
-      },
+      mcpServers,
     } as any);
 
     toolsCache = await mcpClient.getTools();
-    console.log(`[MCP] Loaded ${toolsCache.length} tools from MCP server at ${config.mcp.serverUrl}`);
+    console.log(`[MCP] Loaded ${toolsCache.length} tools total`);
     for (const tool of toolsCache) {
       console.log(`  - ${tool.name}: ${tool.description?.substring(0, 80) || 'No description'}`);
     }
